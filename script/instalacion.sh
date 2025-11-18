@@ -1,5 +1,5 @@
 #!/bin/bash
-# Bash para instalar en Ubunutu server
+# Bash para instalar en Ubunutu SERVER
 
 echo "========================================================="
 #Dar permiso de ejecuccion antes de ejecutar
