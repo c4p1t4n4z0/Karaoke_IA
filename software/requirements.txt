@@ -40,6 +40,15 @@ proglog==0.1.10
 PyAudio==0.2.14
 pydub==0.25.1
 requests==2.32.3
+
+# Dependencias para Sintetizador (Opción Gratis)
+spleeter==2.3.2
+openai-whisper==20231117
+TTS==0.22.0
+transformers==4.35.2  # Versión compatible con TTS 0.22.0 (contiene BeamSearchScorer)
+# Nota: torchcodec NO es necesario - se usa soundfile como alternativa
+librosa==0.10.1
+soundfile==0.12.1  # Usado como backend alternativo para torchaudio (evita torchcodec)
 rfc3986==1.5.0
 six==1.16.0
 sniffio==1.3.1

@@ -4,7 +4,7 @@ from datetime import datetime
 
 # importamos los controladores de Usuario
 from ..controllers import UserController, VideoController, AudioController, PresencialController, SuscripcionController
-from ..controllers import PlansController
+from ..controllers import PlansController, SintetizadorController
 
 # importamos los Modelos de usuario
 from ..models.User import User, Plan
@@ -460,6 +460,175 @@ def stop_capture():
     shared_data["capture_audio"] = False
     PresencialController.voice_queue.put(None)  # Signal the voice worker to exit
     return "Audio capture stopped."
+
+######## Funcionalidad Historial #########################
+
+@home.route('/historial/<int:id>', methods=['GET', 'POST'])
+def historial(id):
+    """
+    Módulo de Historial - Muestra las transcripciones y traducciones del usuario
+    """
+    if 'Esta_logeado' in session:
+        # Obtener información del usuario desde la sesión
+        user_id = session.get('usuario_id')
+        user_name = session.get('name', 'Usuario')
+        
+        # Por ahora mostramos datos de ejemplo
+        # En el futuro aquí se consultaría la base de datos para obtener el historial real
+        historial_data = {
+            'total_transcripciones': 0,
+            'total_audios': 0,
+            'total_videos': 0,
+            'total_presenciales': 0,
+            'ultimas_transcripciones': []
+        }
+        
+        return render_template('historial.html', id=id, user_name=user_name, historial=historial_data)
+    return redirect(url_for('views.login'))
+
+@home.route('/admin_historial', methods=['GET', 'POST'])
+def admin_historial():
+    """
+    Módulo de Historial General - Muestra todas las transcripciones de todos los usuarios (solo admin)
+    """
+    if 'Esta_logeado' in session:
+        # Verificar que sea administrador
+        if session.get('id_rol') == 1:
+            # Por ahora mostramos datos de ejemplo
+            # En el futuro aquí se consultaría la base de datos para obtener el historial de todos los usuarios
+            historial_data = {
+                'total_transcripciones': 0,
+                'total_usuarios': len(UserController.getAll()),
+                'total_audios': 0,
+                'total_videos': 0,
+                'total_presenciales': 0,
+                'ultimas_transcripciones': []
+            }
+            
+            return render_template('admin_historial.html', historial=historial_data)
+        else:
+            flash('No tienes permisos para acceder a esta sección', 'danger')
+            return redirect(url_for('views.dashboard_admin'))
+    return redirect(url_for('views.login'))
+
+######## Funcionalidad Sintetizador #########################
+
+@home.route('/sintetizador/<int:id>', methods=['GET', 'POST'])
+def sintetizador(id):
+    """
+    Módulo de Sintetizador - Interfaz principal
+    """
+    if 'Esta_logeado' in session:
+        return render_template('sintetizador.html', id=id)
+    return redirect(url_for('views.login'))
+
+@home.route('/sintetizador/process/<int:id>', methods=['POST'])
+def sintetizador_process(id):
+    """
+    Procesa el sintetizador completo
+    """
+    if 'Esta_logeado' in session:
+        try:
+            # Verificar que se hayan subido los archivos
+            if 'audioOriginal' not in request.files or 'vozReferencia' not in request.files:
+                return jsonify({'status': 'error', 'message': 'Faltan archivos requeridos'}), 400
+            
+            audio_original = request.files['audioOriginal']
+            voz_referencia = request.files['vozReferencia']
+            texto_letra = request.form.get('letra', '')
+            usar_voz_original = request.form.get('usarVozOriginal') == '1'
+            
+            if audio_original.filename == '' or voz_referencia.filename == '':
+                return jsonify({'status': 'error', 'message': 'Debes seleccionar ambos archivos'}), 400
+            
+            # Guardar archivos temporalmente
+            audio_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(audio_original.filename))
+            voz_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(voz_referencia.filename))
+            
+            audio_original.save(audio_path)
+            voz_referencia.save(voz_path)
+            
+            # Verificar que las dependencias estén instaladas
+            dependencias_faltantes = []
+            try:
+                import spleeter
+            except ImportError:
+                dependencias_faltantes.append('spleeter')
+            
+            try:
+                import whisper
+            except ImportError:
+                dependencias_faltantes.append('openai-whisper')
+            
+            try:
+                import TTS
+            except ImportError:
+                dependencias_faltantes.append('TTS')
+            
+            if dependencias_faltantes:
+                return jsonify({
+                    'status': 'error',
+                    'message': f'Faltan dependencias: {", ".join(dependencias_faltantes)}. Ejecuta: pip install {" ".join(dependencias_faltantes)}'
+                }), 500
+            
+            # Procesar con el controlador
+            print(f"Iniciando procesamiento del sintetizador...")
+            print(f"Audio original: {audio_path}")
+            print(f"Voz referencia: {voz_path}")
+            
+            resultado = SintetizadorController.procesar_completo(
+                audio_original_path=audio_path,
+                voz_referencia_path=voz_path,
+                texto_letra=texto_letra if texto_letra else None,
+                usar_voz_original=usar_voz_original,
+                idioma='es'
+            )
+            
+            print(f"Resultado del procesamiento: {resultado['status']}")
+            if resultado.get('errores'):
+                print(f"Errores encontrados: {resultado['errores']}")
+            
+            if resultado['status'] == 'success':
+                return jsonify({
+                    'status': 'success',
+                    'audio_final': resultado['audio_final'],
+                    'pasos': {
+                        'separacion': resultado['paso1_separacion'],
+                        'letra': resultado['paso2_letra'],
+                        'sintesis': resultado['paso3_sintesis'],
+                        'mezcla': resultado['paso4_mezcla']
+                    }
+                })
+            else:
+                return jsonify({
+                    'status': 'error',
+                    'message': 'Error en el procesamiento',
+                    'errores': resultado['errores']
+                }), 500
+                
+        except Exception as e:
+            import traceback
+            error_trace = traceback.format_exc()
+            print(f"Error en sintetizador_process: {str(e)}")
+            print(f"Traceback: {error_trace}")
+            return jsonify({
+                'status': 'error',
+                'message': f'Error: {str(e)}',
+                'traceback': error_trace if app.config.get('DEBUG') else None
+            }), 500
+    
+    return jsonify({'status': 'error', 'message': 'No autorizado'}), 401
+
+@home.route('/sintetizador', methods=['GET', 'POST'])
+def sintetizador_admin():
+    """
+    Módulo de Sintetizador para Administrador
+    """
+    if 'Esta_logeado' in session:
+        # Obtener id del usuario desde la sesión si es necesario
+        user_id = session.get('usuario_id', 0)
+        return render_template('sintetizador.html', id=user_id)
+    return redirect(url_for('views.login'))
 
 if __name__ == '__main__':
     if not os.path.exists(app.config['UPLOAD_FOLDER']):

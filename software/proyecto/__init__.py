@@ -11,6 +11,10 @@ app = Flask(__name__,static_folder = BaseConfig.STATIC_FOLDER, template_folder =
 
 app.config.from_object('config.DevConfig')  # traigo las configuraciones de DevConfig
 
+# Asegurar que SECRET_KEY esté configurada
+if not app.config.get('SECRET_KEY'):
+    app.config['SECRET_KEY'] = BaseConfig.SECRET_KEY
+
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)

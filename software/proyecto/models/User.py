@@ -42,7 +42,7 @@ class User(db.Model):
 
     # SQL para insertar un usuario de prueba
     sql2 = "INSERT INTO users (name, email, password, id_rol, state, create_at ) VALUES (%s, %s, %s,%s, %s, %s);"
-    _fetch_none(sql2, ('admin', 'admin@gmail.com', '12345678', 1, 'activo', datetime.now))
+    _fetch_none(sql2, ('admin', 'admin@gmail.com', '12345678', 1, 'activo', datetime.now()))
 
     @classmethod  # Decorador para definir un método de clase
     def check_password(self, hashed_password, password_hash):

@@ -1,0 +1,415 @@
+{% extends "base/base.html" %}
+
+{% block title %} Sintetizador de Voz {% endblock title %}
+
+{% block stylesheets %}
+{{ super() }}
+<style>
+    .process-step {
+        background: #fff;
+        border-radius: 8px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-left: 4px solid #3498db;
+    }
+    .process-step.completed {
+        border-left-color: #2ecc71;
+        background: #f8fff9;
+    }
+    .process-step.processing {
+        border-left-color: #f39c12;
+        background: #fffbf0;
+    }
+    .process-step.error {
+        border-left-color: #e74c3c;
+        background: #fff5f5;
+    }
+    .step-number {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        text-align: center;
+        background: #3498db;
+        color: white;
+        border-radius: 50%;
+        font-weight: bold;
+        margin-right: 15px;
+    }
+    .process-step.completed .step-number {
+        background: #2ecc71;
+    }
+    .process-step.processing .step-number {
+        background: #f39c12;
+    }
+    .process-step.error .step-number {
+        background: #e74c3c;
+    }
+    .upload-zone {
+        border: 2px dashed #bdc3c7;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: #f8f9fa;
+    }
+    .upload-zone:hover {
+        border-color: #3498db;
+        background: #e8f4f8;
+    }
+    .upload-zone.dragover {
+        border-color: #3498db;
+        background: #d4edff;
+    }
+    .file-input {
+        display: none;
+    }
+    .file-info {
+        margin-top: 15px;
+        padding: 10px;
+        background: #e8f4f8;
+        border-radius: 5px;
+        display: none;
+    }
+    .progress-bar-container {
+        margin-top: 15px;
+        display: none;
+    }
+    .btn-process {
+        width: 100%;
+        padding: 15px;
+        font-size: 1.1em;
+        margin-top: 20px;
+    }
+    .result-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        display: none;
+    }
+    .audio-preview {
+        margin-top: 15px;
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="right_col" role="main">
+    <div class="page-title">
+        <div class="title_left">
+            <h3><i class="fa fa-volume-up"></i> Sintetizador de Voz</h3>
+            <p class="text-muted">Reemplaza la voz en cualquier canción con tu propia voz clonada</p>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <!-- Información del proceso -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2><i class="fa fa-info-circle"></i> ¿Cómo funciona?</h2>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <p>Este módulo te permite reemplazar la voz en cualquier canción con tu propia voz. El proceso consta de 4 pasos:</p>
+                    <ol>
+                        <li><strong>Separación:</strong> Extraemos la voz y el instrumental de la canción original</li>
+                        <li><strong>Letra:</strong> Extraemos o escribes la letra de la canción</li>
+                        <li><strong>Síntesis:</strong> Clonamos tu voz y la hacemos cantar la letra</li>
+                        <li><strong>Mezcla:</strong> Combinamos tu voz con el instrumental para crear la canción final</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario principal -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2><i class="fa fa-upload"></i> Subir Archivos</h2>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <form id="sintetizadorForm" action="/sintetizador/process/{{ id }}" method="POST" enctype="multipart/form-data">
+                        <!-- Audio Original -->
+                        <div class="form-group">
+                            <label><i class="fa fa-music"></i> Audio Original (Canción con voz)</label>
+                            <div class="upload-zone" id="audioOriginalZone">
+                                <i class="fa fa-cloud-upload" style="font-size: 3em; color: #3498db; margin-bottom: 15px;"></i>
+                                <p>Arrastra y suelta el audio aquí o haz clic para seleccionar</p>
+                                <p class="text-muted">
+                                    <strong>Formatos soportados:</strong> MP3, WAV, M4A, FLAC, OGG<br>
+                                    <strong>Recomendado:</strong> MP3 o WAV de buena calidad
+                                </p>
+                                <input type="file" id="audioOriginal" name="audioOriginal" accept="audio/*,.mp3,.wav,.m4a,.flac,.ogg" class="file-input" required>
+                            </div>
+                            <div class="file-info" id="audioOriginalInfo"></div>
+                        </div>
+
+                        <!-- Voz de Referencia -->
+                        <div class="form-group" style="margin-top: 30px;">
+                            <label><i class="fa fa-microphone"></i> Voz de Referencia (Tu voz para clonar)</label>
+                            <div class="upload-zone" id="vozReferenciaZone">
+                                <i class="fa fa-microphone" style="font-size: 3em; color: #e74c3c; margin-bottom: 15px;"></i>
+                                <p>Arrastra y suelta un audio con tu voz aquí o haz clic para seleccionar</p>
+                                <p class="text-muted">
+                                    <strong>Formatos soportados:</strong> WAV, MP3, FLAC, M4A, OGG<br>
+                                    <strong>Recomendado:</strong> WAV (mejor calidad)<br>
+                                    <strong>Duración:</strong> 30-60 segundos de tu voz hablando o cantando<br>
+                                    <strong>Calidad:</strong> Voz clara, sin ruido de fondo
+                                </p>
+                                <input type="file" id="vozReferencia" name="vozReferencia" accept="audio/*,.wav,.mp3,.flac,.m4a,.ogg" class="file-input" required>
+                            </div>
+                            <div class="file-info" id="vozReferenciaInfo"></div>
+                            <div class="alert alert-info" style="margin-top: 10px;">
+                                <i class="fa fa-info-circle"></i> <strong>Consejo:</strong> Para mejores resultados, graba tu voz en un ambiente silencioso con buena calidad de audio. El formato WAV da los mejores resultados.
+                            </div>
+                        </div>
+
+                        <!-- Letra (Opcional) -->
+                        <div class="form-group" style="margin-top: 30px;">
+                            <label><i class="fa fa-file-text"></i> Letra de la Canción (Opcional)</label>
+                            <textarea 
+                                id="letra" 
+                                name="letra" 
+                                class="form-control" 
+                                rows="6" 
+                                placeholder="Escribe la letra aquí... (Si no la proporcionas, intentaremos extraerla automáticamente)"></textarea>
+                            <small class="form-text text-muted">Si dejas esto vacío, intentaremos extraer la letra del audio original</small>
+                        </div>
+
+                        <!-- Opciones -->
+                        <div class="form-group" style="margin-top: 20px;">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" id="usarVozOriginal" name="usarVozOriginal" value="1">
+                                    Usar voz original separada (en lugar de clonar)
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">Si marcas esto, usaremos la voz extraída del audio original en lugar de clonar tu voz</small>
+                        </div>
+
+                        <!-- Botón de procesamiento -->
+                        <button type="submit" class="btn btn-primary btn-process" id="btnProcess">
+                            <i class="fa fa-cog"></i> Iniciar Procesamiento
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progreso del proceso -->
+    <div class="row" id="procesoSection" style="display: none;">
+        <div class="col-md-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2><i class="fa fa-tasks"></i> Proceso</h2>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <!-- Paso 1: Separación -->
+                    <div class="process-step" id="step1">
+                        <span class="step-number">1</span>
+                        <h4>Separación de Stems</h4>
+                        <p>Extrayendo la voz y el instrumental del audio original...</p>
+                        <div class="progress-bar-container">
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paso 2: Letra -->
+                    <div class="process-step" id="step2">
+                        <span class="step-number">2</span>
+                        <h4>Generación de Letra</h4>
+                        <p>Extrayendo o generando la letra de la canción...</p>
+                        <div class="progress-bar-container">
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paso 3: Síntesis -->
+                    <div class="process-step" id="step3">
+                        <span class="step-number">3</span>
+                        <h4>Clonación y Síntesis de Voz</h4>
+                        <p>Clonando tu voz y sintetizando la letra...</p>
+                        <div class="progress-bar-container">
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paso 4: Mezcla -->
+                    <div class="process-step" id="step4">
+                        <span class="step-number">4</span>
+                        <h4>Mezcla Final</h4>
+                        <p>Combinando tu voz con el instrumental...</p>
+                        <div class="progress-bar-container">
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resultado -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="x_panel result-section" id="resultSection">
+                <div class="x_title">
+                    <h2><i class="fa fa-check-circle text-success"></i> ¡Proceso Completado!</h2>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <p>Tu canción con la voz clonada está lista.</p>
+                    <div class="audio-preview">
+                        <audio id="audioPreview" controls style="width: 100%;"></audio>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <a href="#" id="downloadLink" class="btn btn-success btn-lg">
+                            <i class="fa fa-download"></i> Descargar Canción Final
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+{{ super()}}
+<script>
+    $(document).ready(function() {
+        // Manejo de drag and drop
+        function setupDragDrop(zoneId, inputId, infoId) {
+            const zone = document.getElementById(zoneId);
+            const input = document.getElementById(inputId);
+            const info = document.getElementById(infoId);
+
+            zone.addEventListener('click', () => input.click());
+            
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                zone.classList.add('dragover');
+            });
+            
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('dragover');
+            });
+            
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    input.files = files;
+                    updateFileInfo(files[0], info);
+                }
+            });
+            
+            input.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    updateFileInfo(e.target.files[0], info);
+                }
+            });
+        }
+
+        function updateFileInfo(file, infoElement) {
+            const size = (file.size / (1024 * 1024)).toFixed(2);
+            infoElement.innerHTML = `
+                <strong>Archivo seleccionado:</strong> ${file.name}<br>
+                <strong>Tamaño:</strong> ${size} MB<br>
+                <strong>Tipo:</strong> ${file.type}
+            `;
+            infoElement.style.display = 'block';
+        }
+
+        setupDragDrop('audioOriginalZone', 'audioOriginal', 'audioOriginalInfo');
+        setupDragDrop('vozReferenciaZone', 'vozReferencia', 'vozReferenciaInfo');
+
+        // Manejo del formulario
+        $('#sintetizadorForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Mostrar sección de proceso
+            $('#procesoSection').show();
+            
+            // Deshabilitar botón
+            $('#btnProcess').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Procesando...');
+            
+            // Simular progreso (esto se reemplazará con llamadas AJAX reales)
+            simulateProgress();
+            
+            // Enviar formulario
+            const formData = new FormData(this);
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    handleSuccess(response);
+                },
+                error: function(xhr) {
+                    handleError(xhr);
+                }
+            });
+        });
+
+        function simulateProgress() {
+            // Simulación de progreso (remover cuando se implemente el backend real)
+            setTimeout(() => updateStep(1, 'completed'), 1000);
+            setTimeout(() => updateStep(2, 'completed'), 2000);
+            setTimeout(() => updateStep(3, 'completed'), 3000);
+            setTimeout(() => updateStep(4, 'completed'), 4000);
+        }
+
+        function updateStep(stepNum, status) {
+            const step = $('#step' + stepNum);
+            step.removeClass('processing error').addClass(status);
+            
+            if (status === 'processing') {
+                step.find('.progress-bar-container').show();
+                step.find('.progress-bar').css('width', '50%');
+            } else if (status === 'completed') {
+                step.find('.progress-bar').css('width', '100%');
+                step.find('p').text('✓ Completado');
+            } else if (status === 'error') {
+                step.find('p').text('✗ Error en el proceso');
+            }
+        }
+
+        function handleSuccess(response) {
+            // Mostrar resultado
+            $('#resultSection').show();
+            if (response.audio_final) {
+                $('#audioPreview').attr('src', response.audio_final);
+                $('#downloadLink').attr('href', response.audio_final);
+            }
+            $('#btnProcess').prop('disabled', false).html('<i class="fa fa-cog"></i> Iniciar Procesamiento');
+        }
+
+        function handleError(xhr) {
+            alert('Error al procesar. Por favor, intenta nuevamente.');
+            $('#btnProcess').prop('disabled', false).html('<i class="fa fa-cog"></i> Iniciar Procesamiento');
+        }
+    });
+</script>
+{% endblock javascripts %}
