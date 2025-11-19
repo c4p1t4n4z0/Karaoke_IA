@@ -4,15 +4,184 @@
 
 {% block stylesheets %}
 {{ super() }}
+<style>
+    .dashboard-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .dashboard-card .icon {
+        font-size: 3em;
+        margin-bottom: 15px;
+        color: #3498db;
+    }
+    .dashboard-card h3 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+    }
+    .dashboard-card p {
+        color: #7f8c8d;
+        margin-bottom: 20px;
+    }
+    .dashboard-card .btn {
+        width: 100%;
+    }
+    .welcome-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+    .quick-stats {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 20px;
+    }
+    .stat-item {
+        text-align: center;
+    }
+    .stat-number {
+        font-size: 2em;
+        font-weight: bold;
+    }
+    .stat-label {
+        font-size: 0.9em;
+        opacity: 0.9;
+    }
+</style>
 {% endblock stylesheets %}
 
 {% block content %}
 <div class="right_col" role="main">
+    <!-- Bienvenida -->
+    <div class="welcome-section">
+        <h1><i class="fa fa-home"></i> Bienvenido a LenguaStream AI</h1>
+        <p>Tu plataforma de transcripción y traducción con Inteligencia Artificial</p>
+        <div class="quick-stats">
+            <div class="stat-item">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Servicios Disponibles</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">100+</div>
+                <div class="stat-label">Idiomas Soportados</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Disponible</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjetas de Servicios -->
+    <div class="row">
+        <div class="col-md-4 col-sm-6 col-xs-12">
+            <div class="dashboard-card">
+                <div class="icon text-center">
+                    <i class="fa fa-headphones"></i>
+                </div>
+                <h3>Transcripción de Audio</h3>
+                <p>Sube archivos de audio y obtén transcripciones precisas con traducción automática a múltiples idiomas.</p>
+                <a href="/audio/{{ id }}" class="btn btn-primary">
+                    <i class="fa fa-upload"></i> Procesar Audio
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-sm-6 col-xs-12">
+            <div class="dashboard-card">
+                <div class="icon text-center">
+                    <i class="fa fa-video-camera"></i>
+                </div>
+                <h3>Transcripción de Video</h3>
+                <p>Extrae y transcribe el audio de tus videos, con soporte para subtítulos y traducciones.</p>
+                <a href="/video/{{ id }}" class="btn btn-danger">
+                    <i class="fa fa-upload"></i> Procesar Video
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-sm-6 col-xs-12">
+            <div class="dashboard-card">
+                <div class="icon text-center">
+                    <i class="fa fa-microphone"></i>
+                </div>
+                <h3>Transcripción Presencial</h3>
+                <p>Transcripción en tiempo real desde tu micrófono con traducción simultánea.</p>
+                <a href="/presencial/{{ id }}" class="btn btn-success">
+                    <i class="fa fa-play"></i> Iniciar Sesión
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accesos Rápidos -->
+    <div class="row">
+        <div class="col-md-6 col-sm-6 col-xs-12">
+            <div class="dashboard-card">
+                <h3><i class="fa fa-history"></i> Mi Historial</h3>
+                <p>Revisa todas tus transcripciones y traducciones anteriores. Accede a tus archivos procesados.</p>
+                <a href="/historial/{{ id }}" class="btn btn-info">
+                    <i class="fa fa-eye"></i> Ver Historial
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-sm-6 col-xs-12">
+            <div class="dashboard-card">
+                <h3><i class="fa fa-credit-card"></i> Planes y Suscripción</h3>
+                <p>Explora nuestros planes disponibles y mejora tu experiencia con más funcionalidades.</p>
+                <a href="/plans/{{ id }}" class="btn btn-warning">
+                    <i class="fa fa-star"></i> Ver Planes
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información Adicional -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2><i class="fa fa-info-circle"></i> ¿Cómo funciona?</h2>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h4><i class="fa fa-upload text-primary"></i> 1. Sube tu archivo</h4>
+                            <p>Selecciona un archivo de audio o video desde tu dispositivo.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h4><i class="fa fa-cog text-success"></i> 2. Procesamiento IA</h4>
+                            <p>Nuestra IA transcribe y traduce automáticamente tu contenido.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h4><i class="fa fa-download text-danger"></i> 3. Descarga resultados</h4>
+                            <p>Obtén tu transcripción, traducción y audio traducido.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock content %}
 
 {% block javascripts %}
 {{ super()}}
-<!-- Chart.js -->
-
+<script>
+    $(document).ready(function() {
+        console.log('Dashboard cargado correctamente');
+    });
+</script>
 {% endblock javascripts %}

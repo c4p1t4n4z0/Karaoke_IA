@@ -1,0 +1,210 @@
+{% extends "base/base.html" %}
+
+{% block title %} Mi Historial {% endblock title %}
+
+{% block stylesheets %}
+{{ super() }}
+<style>
+    .stats-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .stats-number {
+        font-size: 2.5em;
+        font-weight: bold;
+        color: #2c3e50;
+        margin: 10px 0;
+    }
+    .stats-label {
+        color: #7f8c8d;
+        font-size: 0.9em;
+        text-transform: uppercase;
+    }
+    .historial-table {
+        background: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #95a5a6;
+    }
+    .empty-state i {
+        font-size: 4em;
+        margin-bottom: 20px;
+        color: #ecf0f1;
+    }
+    .badge-type {
+        padding: 5px 10px;
+        border-radius: 12px;
+        font-size: 0.85em;
+        font-weight: 500;
+    }
+    .badge-audio {
+        background: #3498db;
+        color: white;
+    }
+    .badge-video {
+        background: #e74c3c;
+        color: white;
+    }
+    .badge-presencial {
+        background: #2ecc71;
+        color: white;
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="right_col" role="main">
+    <div class="page-title">
+        <div class="title_left">
+            <h3>Mi Historial de Transcripciones</h3>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+
+    <!-- Estadísticas -->
+    <div class="row">
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            <div class="stats-card">
+                <div class="stats-label">Total Transcripciones</div>
+                <div class="stats-number">{{ historial.total_transcripciones }}</div>
+                <div><i class="fa fa-file-text-o"></i> Documentos procesados</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            <div class="stats-card">
+                <div class="stats-label">Archivos de Audio</div>
+                <div class="stats-number">{{ historial.total_audios }}</div>
+                <div><i class="fa fa-headphones"></i> Audios procesados</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            <div class="stats-card">
+                <div class="stats-label">Videos</div>
+                <div class="stats-number">{{ historial.total_videos }}</div>
+                <div><i class="fa fa-video-camera"></i> Videos procesados</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            <div class="stats-card">
+                <div class="stats-label">Sesiones Presenciales</div>
+                <div class="stats-number">{{ historial.total_presenciales }}</div>
+                <div><i class="fa fa-microphone"></i> Sesiones en vivo</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Historial -->
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="historial-table">
+                <div class="x_title">
+                    <h2>Últimas Transcripciones</h2>
+                    <div class="clearfix"></div>
+                </div>
+                
+                {% if historial.ultimas_transcripciones|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table table-striped jambo_table bulk_action">
+                        <thead>
+                            <tr class="headings">
+                                <th class="column-title">Fecha</th>
+                                <th class="column-title">Tipo</th>
+                                <th class="column-title">Idioma Origen</th>
+                                <th class="column-title">Idioma Destino</th>
+                                <th class="column-title">Estado</th>
+                                <th class="column-title no-link last"><span class="nobr">Acciones</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in historial.ultimas_transcripciones %}
+                            <tr class="even pointer">
+                                <td>{{ item.fecha }}</td>
+                                <td>
+                                    {% if item.tipo == 'audio' %}
+                                        <span class="badge-type badge-audio">Audio</span>
+                                    {% elif item.tipo == 'video' %}
+                                        <span class="badge-type badge-video">Video</span>
+                                    {% elif item.tipo == 'presencial' %}
+                                        <span class="badge-type badge-presencial">Presencial</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.idioma_origen }}</td>
+                                <td>{{ item.idioma_destino }}</td>
+                                <td>
+                                    <span class="label label-success">Completado</span>
+                                </td>
+                                <td>
+                                    <a href="#" class="btn btn-info btn-xs"><i class="fa fa-eye"></i> Ver</a>
+                                    <a href="#" class="btn btn-primary btn-xs"><i class="fa fa-download"></i> Descargar</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fa fa-inbox"></i>
+                    <h3>No hay transcripciones aún</h3>
+                    <p>Comienza a usar nuestros servicios de transcripción y traducción para ver tu historial aquí.</p>
+                    <div style="margin-top: 30px;">
+                        <a href="/audio/{{ id }}" class="btn btn-primary"><i class="fa fa-headphones"></i> Procesar Audio</a>
+                        <a href="/video/{{ id }}" class="btn btn-danger"><i class="fa fa-video-camera"></i> Procesar Video</a>
+                        <a href="/presencial/{{ id }}" class="btn btn-success"><i class="fa fa-microphone"></i> Transcripción Presencial</a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Información adicional -->
+    <div class="row" style="margin-top: 20px;">
+        <div class="col-md-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2><i class="fa fa-info-circle"></i> Información</h2>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <p>En esta sección podrás ver todas tus transcripciones y traducciones realizadas. 
+                    Puedes filtrar por tipo de archivo, fecha o idioma para encontrar fácilmente lo que buscas.</p>
+                    <ul>
+                        <li><strong>Audio:</strong> Archivos de audio subidos y procesados</li>
+                        <li><strong>Video:</strong> Videos procesados con extracción de audio</li>
+                        <li><strong>Presencial:</strong> Transcripciones en tiempo real desde tu micrófono</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+{{ super()}}
+<script>
+    // Aquí se pueden agregar funciones JavaScript para filtros, búsqueda, etc.
+    $(document).ready(function() {
+        console.log('Módulo de Historial cargado');
+    });
+</script>
+{% endblock javascripts %}
+
+
+
+
