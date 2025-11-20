@@ -529,24 +529,62 @@ def sintetizador_process(id):
     """
     if 'Esta_logeado' in session:
         try:
-            # Verificar que se hayan subido los archivos
-            if 'audioOriginal' not in request.files or 'vozReferencia' not in request.files:
-                return jsonify({'status': 'error', 'message': 'Faltan archivos requeridos'}), 400
+            # Verificar archivo de audio original
+            if 'audioOriginal' not in request.files:
+                return jsonify({'status': 'error', 'message': 'Falta el archivo de audio original'}), 400
             
             audio_original = request.files['audioOriginal']
-            voz_referencia = request.files['vozReferencia']
-            texto_letra = request.form.get('letra', '')
-            usar_voz_original = request.form.get('usarVozOriginal') == '1'
+            if audio_original.filename == '':
+                return jsonify({'status': 'error', 'message': 'Debes seleccionar el archivo de audio original'}), 400
             
-            if audio_original.filename == '' or voz_referencia.filename == '':
-                return jsonify({'status': 'error', 'message': 'Debes seleccionar ambos archivos'}), 400
+            # Obtener modo de voz (clonar o predefinida)
+            modo_voz = request.form.get('modoVoz', 'clonar')
+            # Intentar obtener vozPredefinidaId del formulario (puede venir como vozPredefinida o vozPredefinidaId)
+            voz_predefinida_id = request.form.get('vozPredefinidaId') or request.form.get('vozPredefinida')
+            texto_letra = request.form.get('letra', '')  # Opcional: si no se proporciona, se extrae automáticamente
+            usar_voz_original = False  # Siempre usar síntesis/clonación, no la voz original separada
+            traducir_a = request.form.get('traducirA', None)  # Idioma al que traducir (opcional)
+            idioma_audio = 'es'  # Se detecta automáticamente durante la transcripción
             
-            # Guardar archivos temporalmente
+            # Debug: mostrar valores recibidos
+            print(f"📋 Parámetros recibidos:")
+            print(f"   modo_voz: {modo_voz}")
+            print(f"   voz_predefinida_id: {voz_predefinida_id}")
+            print(f"   traducir_a: {traducir_a}")
+            print(f"   idioma_audio: {idioma_audio}")
+            
+            # Guardar audio original temporalmente
             audio_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(audio_original.filename))
-            voz_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(voz_referencia.filename))
-            
             audio_original.save(audio_path)
-            voz_referencia.save(voz_path)
+            
+            # Manejar voz de referencia según el modo
+            voz_path = None
+            if modo_voz == 'clonar':
+                # Modo clonar: necesitamos archivo de voz de referencia
+                if 'vozReferencia' not in request.files:
+                    return jsonify({'status': 'error', 'message': 'Falta el archivo de voz de referencia'}), 400
+                
+                voz_referencia = request.files['vozReferencia']
+                if voz_referencia.filename == '':
+                    return jsonify({'status': 'error', 'message': 'Debes seleccionar el archivo de voz de referencia'}), 400
+                
+                voz_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(voz_referencia.filename))
+                voz_referencia.save(voz_path)
+            elif modo_voz == 'predefinida':
+                # Modo predefinida: no necesitamos archivo, pero sí necesitamos el voice_id
+                # Intentar obtener vozPredefinidaId del formulario (puede venir con diferente nombre)
+                if not voz_predefinida_id or voz_predefinida_id == '':
+                    # Intentar obtener desde el form directamente
+                    voz_predefinida_id = request.form.get('vozPredefinidaId') or request.form.get('vozPredefinida')
+                    if not voz_predefinida_id or voz_predefinida_id == '':
+                        print(f"⚠️  Error: Modo predefinida pero no se recibió voz_predefinida_id")
+                        print(f"   Parámetros form disponibles: {list(request.form.keys())}")
+                        return jsonify({
+                            'status': 'error', 
+                            'message': 'Debes seleccionar una voz predefinida del dropdown. Por favor, selecciona una voz (Rachel, Domi, Josh, etc.)'
+                        }), 400
+            else:
+                return jsonify({'status': 'error', 'message': 'Modo de voz no válido'}), 400
             
             # Verificar que las dependencias estén instaladas
             dependencias_faltantes = []
@@ -574,14 +612,21 @@ def sintetizador_process(id):
             # Procesar con el controlador
             print(f"Iniciando procesamiento del sintetizador...")
             print(f"Audio original: {audio_path}")
-            print(f"Voz referencia: {voz_path}")
+            print(f"Modo voz: {modo_voz}")
+            if modo_voz == 'clonar':
+                print(f"Voz referencia: {voz_path}")
+            elif modo_voz == 'predefinida':
+                print(f"Voz predefinida ID: {voz_predefinida_id}")
             
             resultado = SintetizadorController.procesar_completo(
                 audio_original_path=audio_path,
                 voz_referencia_path=voz_path,
                 texto_letra=texto_letra if texto_letra else None,
                 usar_voz_original=usar_voz_original,
-                idioma='es'
+                idioma=idioma_audio,
+                traducir_a=traducir_a,  # Idioma al que traducir (opcional)
+                modo_voz=modo_voz,
+                voz_predefinida_id=voz_predefinida_id
             )
             
             print(f"Resultado del procesamiento: {resultado['status']}")

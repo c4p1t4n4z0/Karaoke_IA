@@ -1,5 +1,5 @@
 import speech_recognition as sr
-from googletrans import Translator, LANGUAGES
+from deep_translator import GoogleTranslator
 from gtts import gTTS
 import threading
 import queue
@@ -7,8 +7,26 @@ import os
 
 
 recognizer = sr.Recognizer()  # Inicializa el reconocedor de voz
-translator = Translator()  # Inicializa el traductor
 voice_queue = queue.Queue()  # Cola para manejar las traducciones a voz
+
+# Mapeo de idiomas compatible con googletrans (usando deep-translator)
+LANGUAGES = {
+    'es': 'spanish', 'en': 'english', 'fr': 'french', 'de': 'german', 'it': 'italian',
+    'pt': 'portuguese', 'ru': 'russian', 'ja': 'japanese', 'ko': 'korean', 'zh': 'chinese',
+    'ar': 'arabic', 'hi': 'hindi', 'tr': 'turkish', 'pl': 'polish', 'nl': 'dutch',
+    'sv': 'swedish', 'no': 'norwegian', 'da': 'danish', 'fi': 'finnish', 'cs': 'czech',
+    'ro': 'romanian', 'hu': 'hungarian', 'el': 'greek', 'he': 'hebrew', 'th': 'thai',
+    'vi': 'vietnamese', 'id': 'indonesian', 'ms': 'malay', 'uk': 'ukrainian', 'bg': 'bulgarian',
+    'hr': 'croatian', 'sk': 'slovak', 'sl': 'slovenian', 'sr': 'serbian', 'mk': 'macedonian',
+    'sq': 'albanian', 'lt': 'lithuanian', 'lv': 'latvian', 'et': 'estonian', 'mt': 'maltese',
+    'ga': 'irish', 'cy': 'welsh', 'is': 'icelandic', 'eu': 'basque', 'ca': 'catalan',
+    'gl': 'galician', 'af': 'afrikaans', 'sw': 'swahili', 'zu': 'zulu', 'xh': 'xhosa',
+    'yo': 'yoruba', 'ig': 'igbo', 'ha': 'hausa', 'am': 'amharic', 'bn': 'bengali',
+    'ta': 'tamil', 'te': 'telugu', 'ml': 'malayalam', 'kn': 'kannada', 'gu': 'gujarati',
+    'pa': 'punjabi', 'ur': 'urdu', 'ne': 'nepali', 'si': 'sinhala', 'my': 'myanmar',
+    'km': 'khmer', 'lo': 'lao', 'ka': 'georgian', 'hy': 'armenian', 'az': 'azerbaijani',
+    'kk': 'kazakh', 'ky': 'kyrgyz', 'uz': 'uzbek', 'mn': 'mongolian', 'tg': 'tajik'
+}
 
 # Función para obtener los idiomas disponibles
 def get_available_languages():
@@ -51,8 +69,9 @@ def recognize_and_translate(source_lang, target_lang, shared_data):
                         text = recognizer.recognize_google(audio, language=source_lang)
                         shared_data['recognized_texts'].append(text)
 
-                        # Traduce el texto reconocido
-                        translation = translator.translate(text, dest=target_lang).text
+                        # Traduce el texto reconocido usando deep-translator
+                        translator = GoogleTranslator(source=source_lang, target=target_lang)
+                        translation = translator.translate(text)
                         shared_data['translation_texts'].append(translation)
                         print("You said: {}".format(text))
                         print("Translation: {}".format(translation))
