@@ -26,4 +26,10 @@ class DevConfig(BaseConfig):
     #Establece esta opción en False para mejorar el rendimiento.
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
+    # API Keys para servicios externos (opcional)
+    ELEVENLABS_API_KEY = os.environ.get("ELEVENLABS_API_KEY","").strip()  # API Key de ElevenLabs para síntesis de voz (más liviano que modelos locales)
+    ELEVENLABS_VOICE_ID = os.environ.get("ELEVENLABS_VOICE_ID","").strip()  # Voice ID de una voz existente en ElevenLabs (opcional, si no tienes permiso voices_write)
+    RESEMBLE_API_KEY = os.environ.get("RESEMBLE_API_KEY","").strip()  # API Key de Resemble.ai para clonación de voz (alternativa a ElevenLabs)
+    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY","").strip()  # API Key de OpenAI para transcripción de audio (Whisper API - más rápida y precisa que Whisper local)
+    
     print(SQLALCHEMY_DATABASE_URI)

@@ -20,14 +20,15 @@ certifi==2024.2.2
 chardet==3.0.4
 charset-normalizer==3.3.2
 decorator==4.4.2
-googletrans==4.0.0rc1
+# googletrans==4.0.0rc1  # Reemplazado por deep-translator (más compatible)
+deep-translator==1.11.4  # Librería moderna de traducción (compatible con httpx>=0.21.2)
 gTTS==2.5.1
-h11==0.9.0
+h11>=0.16  # Actualizado para compatibilidad con httpx>=0.21.2
 h2==3.2.0
 hpack==3.0.0
-hstspreload==2024.5.1
-httpcore==0.9.1
-httpx==0.13.3
+hstspreload>=2024.5.1
+httpcore>=1.0.0  # Actualizado para compatibilidad con elevenlabs
+httpx>=0.21.2  # Actualizado para compatibilidad con elevenlabs
 hyperframe==5.2.0
 idna==2.10
 imageio==2.34.1
@@ -41,14 +42,16 @@ PyAudio==0.2.14
 pydub==0.25.1
 requests==2.32.3
 
-# Dependencias para Sintetizador (Opción Gratis)
+# Dependencias para Sintetizador
 spleeter==2.3.2
-openai-whisper==20231117
-TTS==0.22.0
+openai-whisper==20231117  # Whisper local (fallback si no hay API key)
+openai  # Librería oficial de OpenAI para usar Whisper API (más rápida y precisa)
+TTS==0.22.0  # Solo necesario si no usas API externa (más pesado)
 transformers==4.35.2  # Versión compatible con TTS 0.22.0 (contiene BeamSearchScorer)
 # Nota: torchcodec NO es necesario - se usa soundfile como alternativa
 librosa==0.10.1
 soundfile==0.12.1  # Usado como backend alternativo para torchaudio (evita torchcodec)
+elevenlabs  # API liviana para síntesis de voz (opcional, requiere API KEY)
 rfc3986==1.5.0
 six==1.16.0
 sniffio==1.3.1
@@ -83,5 +86,239 @@ itsdangerous==2.2.0
 #pyttsx3==2.90
 #pywin32==306
 Werkzeug==3.0.3
+
+
+
+transformers==4.35.2  # Versión compatible con TTS 0.22.0 (contiene BeamSearchScorer)
+# Nota: torchcodec NO es necesario - se usa soundfile como alternativa
+librosa==0.10.1
+soundfile==0.12.1  # Usado como backend alternativo para torchaudio (evita torchcodec)
+rfc3986==1.5.0
+
+six==1.16.0
+
+sniffio==1.3.1
+
+SpeechRecognition==3.10.4
+
+tqdm==4.66.4
+
+typing_extensions==4.12.0
+
+urllib3==2.2.1
+
+
+
+
+
+anyio==4.4.0
+
+cffi==1.16.0
+
+cmake==3.25.0
+
+distlib==0.3.8
+
+filelock==3.14.0
+
+platformdirs==4.2.1
+
+pycparser==2.22
+
+pygame==2.5.2
+
+scipy==1.13.1
+
+sounddevice==0.4.7
+
+srt==3.5.3
+
+threaded==4.2.0
+
+utils==1.0.2
+
+virtualenv==20.26.1
+
+vosk==0.3.45
+
+websockets==12.0
+
+
+
+
+
+
+
+comtypes==1.4.4
+
+itsdangerous==2.2.0
+
+#pypiwin32==223
+
+#pyttsx3==2.90
+
+#pywin32==306
+
+Werkzeug==3.0.3
+
+
+
+
+
+
+
+transformers==4.35.2  # Versión compatible con TTS 0.22.0 (contiene BeamSearchScorer)
+# Nota: torchcodec NO es necesario - se usa soundfile como alternativa
+librosa==0.10.1
+soundfile==0.12.1  # Usado como backend alternativo para torchaudio (evita torchcodec)
+rfc3986==1.5.0
+
+six==1.16.0
+
+sniffio==1.3.1
+
+SpeechRecognition==3.10.4
+
+tqdm==4.66.4
+
+typing_extensions==4.12.0
+
+urllib3==2.2.1
+
+
+
+
+
+anyio==4.4.0
+
+cffi==1.16.0
+
+cmake==3.25.0
+
+distlib==0.3.8
+
+filelock==3.14.0
+
+platformdirs==4.2.1
+
+pycparser==2.22
+
+pygame==2.5.2
+
+scipy==1.13.1
+
+sounddevice==0.4.7
+
+srt==3.5.3
+
+threaded==4.2.0
+
+utils==1.0.2
+
+virtualenv==20.26.1
+
+vosk==0.3.45
+
+websockets==12.0
+
+
+
+
+
+
+
+comtypes==1.4.4
+
+itsdangerous==2.2.0
+
+#pypiwin32==223
+
+#pyttsx3==2.90
+
+#pywin32==306
+
+Werkzeug==3.0.3
+
+
+
+
+
+
+
+transformers==4.35.2  # Versión compatible con TTS 0.22.0 (contiene BeamSearchScorer)
+# Nota: torchcodec NO es necesario - se usa soundfile como alternativa
+librosa==0.10.1
+soundfile==0.12.1  # Usado como backend alternativo para torchaudio (evita torchcodec)
+rfc3986==1.5.0
+
+six==1.16.0
+
+sniffio==1.3.1
+
+SpeechRecognition==3.10.4
+
+tqdm==4.66.4
+
+typing_extensions==4.12.0
+
+urllib3==2.2.1
+
+
+
+
+
+anyio==4.4.0
+
+cffi==1.16.0
+
+cmake==3.25.0
+
+distlib==0.3.8
+
+filelock==3.14.0
+
+platformdirs==4.2.1
+
+pycparser==2.22
+
+pygame==2.5.2
+
+scipy==1.13.1
+
+sounddevice==0.4.7
+
+srt==3.5.3
+
+threaded==4.2.0
+
+utils==1.0.2
+
+virtualenv==20.26.1
+
+vosk==0.3.45
+
+websockets==12.0
+
+
+
+
+
+
+
+comtypes==1.4.4
+
+itsdangerous==2.2.0
+
+#pypiwin32==223
+
+#pyttsx3==2.90
+
+#pywin32==306
+
+Werkzeug==3.0.3
+
+
+
+
 
 

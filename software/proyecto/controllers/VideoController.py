@@ -1,5 +1,5 @@
 import speech_recognition as sr
-from googletrans import Translator, LANGUAGES
+from deep_translator import GoogleTranslator
 from pydub import AudioSegment
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from gtts import gTTS
@@ -13,6 +13,25 @@ DetectorFactory.seed = 0
 
 TEMP_DIR = 'proyecto/views/static/archivostemporales/'
 os.makedirs(TEMP_DIR, exist_ok=True)  # Crear el directorio si no existe
+
+# Mapeo de idiomas compatible con googletrans (usando deep-translator)
+LANGUAGES = {
+    'es': 'spanish', 'en': 'english', 'fr': 'french', 'de': 'german', 'it': 'italian',
+    'pt': 'portuguese', 'ru': 'russian', 'ja': 'japanese', 'ko': 'korean', 'zh': 'chinese',
+    'ar': 'arabic', 'hi': 'hindi', 'tr': 'turkish', 'pl': 'polish', 'nl': 'dutch',
+    'sv': 'swedish', 'no': 'norwegian', 'da': 'danish', 'fi': 'finnish', 'cs': 'czech',
+    'ro': 'romanian', 'hu': 'hungarian', 'el': 'greek', 'he': 'hebrew', 'th': 'thai',
+    'vi': 'vietnamese', 'id': 'indonesian', 'ms': 'malay', 'uk': 'ukrainian', 'bg': 'bulgarian',
+    'hr': 'croatian', 'sk': 'slovak', 'sl': 'slovenian', 'sr': 'serbian', 'mk': 'macedonian',
+    'sq': 'albanian', 'lt': 'lithuanian', 'lv': 'latvian', 'et': 'estonian', 'mt': 'maltese',
+    'ga': 'irish', 'cy': 'welsh', 'is': 'icelandic', 'eu': 'basque', 'ca': 'catalan',
+    'gl': 'galician', 'af': 'afrikaans', 'sw': 'swahili', 'zu': 'zulu', 'xh': 'xhosa',
+    'yo': 'yoruba', 'ig': 'igbo', 'ha': 'hausa', 'am': 'amharic', 'bn': 'bengali',
+    'ta': 'tamil', 'te': 'telugu', 'ml': 'malayalam', 'kn': 'kannada', 'gu': 'gujarati',
+    'pa': 'punjabi', 'ur': 'urdu', 'ne': 'nepali', 'si': 'sinhala', 'my': 'myanmar',
+    'km': 'khmer', 'lo': 'lao', 'ka': 'georgian', 'hy': 'armenian', 'az': 'azerbaijani',
+    'kk': 'kazakh', 'ky': 'kyrgyz', 'uz': 'uzbek', 'mn': 'mongolian', 'tg': 'tajik'
+}
 
 def convertir_video_a_wav(archivo_entrada, archivo_salida):
     try:
@@ -28,7 +47,6 @@ def mostrar_codigos_idiomas():
 
 def transcribir_y_traducir(audio_path, idioma_entrada=None, idioma_salida='es', reproducir_audio=False):
     r = sr.Recognizer()
-    translator = Translator()
     resultado = {}
 
     try:
@@ -52,8 +70,9 @@ def transcribir_y_traducir(audio_path, idioma_entrada=None, idioma_salida='es', 
             if idioma_salida not in LANGUAGES:
                 raise ValueError(f"Idioma de salida no válido: {idioma_salida}")
 
-            # Traducción
-            texto_traducido = translator.translate(texto, src=idioma_entrada, dest=idioma_salida).text
+            # Traducción usando deep-translator
+            translator = GoogleTranslator(source=idioma_entrada, target=idioma_salida)
+            texto_traducido = translator.translate(texto)
             print(f"Texto traducido a {idioma_salida}: {texto_traducido}")
 
             resultado['texto'] = texto
