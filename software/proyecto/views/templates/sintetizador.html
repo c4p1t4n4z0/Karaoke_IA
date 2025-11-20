@@ -116,13 +116,10 @@
                     <div class="clearfix"></div>
                 </div>
                 <div class="x_content">
-                    <p>Este módulo te permite reemplazar la voz en cualquier canción con tu propia voz. El proceso consta de 4 pasos:</p>
-                    <ol>
-                        <li><strong>Separación:</strong> Extraemos la voz y el instrumental de la canción original</li>
-                        <li><strong>Letra:</strong> Extraemos o escribes la letra de la canción</li>
-                        <li><strong>Síntesis:</strong> Clonamos tu voz y la hacemos cantar la letra</li>
-                        <li><strong>Mezcla:</strong> Combinamos tu voz con el instrumental para crear la canción final</li>
-                    </ol>
+                    <p>Este módulo procesa automáticamente tu canción: separa la voz del instrumental, extrae la letra, la traduce (si lo deseas) y la sintetiza con la voz que elijas.</p>
+                    <div class="alert alert-info">
+                        <i class="fa fa-magic"></i> <strong>Todo es automático:</strong> Solo sube el audio, elige la voz y el idioma. El sistema hace el resto.
+                    </div>
                 </div>
             </div>
         </div>
@@ -155,45 +152,105 @@
 
                         <!-- Voz de Referencia -->
                         <div class="form-group" style="margin-top: 30px;">
-                            <label><i class="fa fa-microphone"></i> Voz de Referencia (Tu voz para clonar)</label>
-                            <div class="upload-zone" id="vozReferenciaZone">
-                                <i class="fa fa-microphone" style="font-size: 3em; color: #e74c3c; margin-bottom: 15px;"></i>
-                                <p>Arrastra y suelta un audio con tu voz aquí o haz clic para seleccionar</p>
-                                <p class="text-muted">
-                                    <strong>Formatos soportados:</strong> WAV, MP3, FLAC, M4A, OGG<br>
-                                    <strong>Recomendado:</strong> WAV (mejor calidad)<br>
-                                    <strong>Duración:</strong> 30-60 segundos de tu voz hablando o cantando<br>
-                                    <strong>Calidad:</strong> Voz clara, sin ruido de fondo
-                                </p>
-                                <input type="file" id="vozReferencia" name="vozReferencia" accept="audio/*,.wav,.mp3,.flac,.m4a,.ogg" class="file-input" required>
+                            <label><i class="fa fa-microphone"></i> Voz de Referencia</label>
+                            
+                            <!-- Selector de modo: Clonar o Predefinida -->
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label><strong>¿Cómo quieres generar la voz?</strong></label>
+                                <div class="radio" style="margin-top: 10px;">
+                                    <label>
+                                        <input type="radio" name="modoVoz" id="modoClonar" value="clonar" checked>
+                                        <strong>Clonar mi voz</strong> (Subir audio con mi voz para clonarla)
+                                    </label>
+                                </div>
+                                <div class="radio">
+                                    <label>
+                                        <input type="radio" name="modoVoz" id="modoPredefinida" value="predefinida">
+                                        <strong>Usar voz predefinida</strong> (Probar con voces de prueba de ElevenLabs)
+                                    </label>
+                                </div>
                             </div>
-                            <div class="file-info" id="vozReferenciaInfo"></div>
-                            <div class="alert alert-info" style="margin-top: 10px;">
-                                <i class="fa fa-info-circle"></i> <strong>Consejo:</strong> Para mejores resultados, graba tu voz en un ambiente silencioso con buena calidad de audio. El formato WAV da los mejores resultados.
+
+                            <!-- Sección: Subir archivo de voz (cuando modo = clonar) -->
+                            <div id="seccionSubirVoz">
+                                <div class="upload-zone" id="vozReferenciaZone">
+                                    <i class="fa fa-microphone" style="font-size: 3em; color: #e74c3c; margin-bottom: 15px;"></i>
+                                    <p>Arrastra y suelta un audio con tu voz aquí o haz clic para seleccionar</p>
+                                    <p class="text-muted">
+                                        <strong>Formatos soportados:</strong> WAV, MP3, FLAC, M4A, OGG<br>
+                                        <strong>Recomendado:</strong> WAV (mejor calidad)<br>
+                                        <strong>Duración:</strong> 30-60 segundos de tu voz hablando o cantando<br>
+                                        <strong>Calidad:</strong> Voz clara, sin ruido de fondo
+                                    </p>
+                                    <input type="file" id="vozReferencia" name="vozReferencia" accept="audio/*,.wav,.mp3,.flac,.m4a,.ogg" class="file-input">
+                                </div>
+                                <div class="file-info" id="vozReferenciaInfo"></div>
+                                <div class="alert alert-info" style="margin-top: 10px;">
+                                    <i class="fa fa-info-circle"></i> <strong>Consejo:</strong> Para mejores resultados, graba tu voz en un ambiente silencioso con buena calidad de audio. El formato WAV da los mejores resultados.
+                                </div>
+                            </div>
+
+                            <!-- Sección: Seleccionar voz predefinida (cuando modo = predefinida) -->
+                            <div id="seccionVozPredefinida" style="display: none;">
+                                <label><strong>Selecciona una voz predefinida:</strong></label>
+                                <select id="vozPredefinida" name="vozPredefinidaId" class="form-control">
+                                    <optgroup label="Voces Femeninas">
+                                        <option value="21m00Tcm4TlvDq8ikWAM">Rachel - Voz femenina profesional</option>
+                                        <option value="AZnzlk1XvdvUeBnXmlld">Domi - Voz femenina expresiva</option>
+                                        <option value="EXAVITQu4vr4xnSDxMaL">Bella - Voz femenina suave</option>
+                                        <option value="MF3mGyEYCl7XYWbV9V6O">Elli - Voz femenina joven</option>
+                                    </optgroup>
+                                    <optgroup label="Voces Masculinas">
+                                        <option value="TxGEqnHWrfWFTfGW9XjX">Josh - Voz masculina profesional</option>
+                                        <option value="VR6AewLTigWG4xSOukaG">Arnold - Voz masculina profunda</option>
+                                        <option value="pNInz6obpgDQGcFmaJgB">Adam - Voz masculina suave</option>
+                                        <option value="yoZ06aMxZJJ28mfd3POQ">Sam - Voz masculina joven</option>
+                                    </optgroup>
+                                </select>
+                                <div class="alert alert-success" style="margin-top: 10px;">
+                                    <i class="fa fa-check-circle"></i> <strong>Ventaja:</strong> Las voces predefinidas no requieren clonación, son más rápidas y funcionan con todos los planes de ElevenLabs. Perfectas para hacer pruebas rápidas.
+                                </div>
+                                <div class="alert alert-warning" style="margin-top: 10px;">
+                                    <i class="fa fa-exclamation-triangle"></i> <strong>Nota:</strong> No necesitas subir ningún archivo cuando usas una voz predefinida.
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Letra (Opcional) -->
+                        <!-- Opción de Traducción -->
                         <div class="form-group" style="margin-top: 30px;">
-                            <label><i class="fa fa-file-text"></i> Letra de la Canción (Opcional)</label>
-                            <textarea 
-                                id="letra" 
-                                name="letra" 
-                                class="form-control" 
-                                rows="6" 
-                                placeholder="Escribe la letra aquí... (Si no la proporcionas, intentaremos extraerla automáticamente)"></textarea>
-                            <small class="form-text text-muted">Si dejas esto vacío, intentaremos extraer la letra del audio original</small>
-                        </div>
-
-                        <!-- Opciones -->
-                        <div class="form-group" style="margin-top: 20px;">
-                            <div class="checkbox">
+                            <label><i class="fa fa-language"></i> Traducir Letra (Opcional)</label>
+                            <div class="checkbox" style="margin-bottom: 10px;">
                                 <label>
-                                    <input type="checkbox" id="usarVozOriginal" name="usarVozOriginal" value="1">
-                                    Usar voz original separada (en lugar de clonar)
+                                    <input type="checkbox" id="traducirLetra" name="traducirLetra" value="1">
+                                    <strong>Traducir la letra a otro idioma</strong>
                                 </label>
                             </div>
-                            <small class="form-text text-muted">Si marcas esto, usaremos la voz extraída del audio original en lugar de clonar tu voz</small>
+                            <div id="seccionTraduccion" style="display: none; margin-top: 10px;">
+                                <label><strong>Traducir a:</strong></label>
+                                <select id="idiomaDestino" name="traducirA" class="form-control">
+                                    <option value="">-- Selecciona idioma --</option>
+                                    <optgroup label="Idiomas Principales">
+                                        <option value="en">Inglés</option>
+                                        <option value="es">Español</option>
+                                        <option value="fr">Francés</option>
+                                        <option value="de">Alemán</option>
+                                        <option value="it">Italiano</option>
+                                        <option value="pt">Portugués</option>
+                                    </optgroup>
+                                    <optgroup label="Otros Idiomas">
+                                        <option value="ja">Japonés</option>
+                                        <option value="ko">Coreano</option>
+                                        <option value="zh">Chino</option>
+                                        <option value="ru">Ruso</option>
+                                        <option value="ar">Árabe</option>
+                                        <option value="hi">Hindi</option>
+                                    </optgroup>
+                                </select>
+                                <small class="form-text text-muted">
+                                    <i class="fa fa-info-circle"></i> Usa OpenAI GPT (ChatGPT) para traducir la letra. 
+                                    Requiere que tengas <code>OPENAI_API_KEY</code> configurada en tu archivo .env
+                                </small>
+                            </div>
                         </div>
 
                         <!-- Botón de procesamiento -->
@@ -343,6 +400,31 @@
         setupDragDrop('audioOriginalZone', 'audioOriginal', 'audioOriginalInfo');
         setupDragDrop('vozReferenciaZone', 'vozReferencia', 'vozReferenciaInfo');
 
+        // Manejo del selector de modo de voz
+        $('input[name="modoVoz"]').on('change', function() {
+            const modo = $(this).val();
+            if (modo === 'clonar') {
+                $('#seccionSubirVoz').show();
+                $('#seccionVozPredefinida').hide();
+                $('#vozReferencia').prop('required', true);
+            } else if (modo === 'predefinida') {
+                $('#seccionSubirVoz').hide();
+                $('#seccionVozPredefinida').show();
+                $('#vozReferencia').prop('required', false);
+            }
+        });
+
+        // Manejo del selector de traducción
+        $('#traducirLetra').on('change', function() {
+            if ($(this).is(':checked')) {
+                $('#seccionTraduccion').show();
+                $('#idiomaDestino').prop('required', true);
+            } else {
+                $('#seccionTraduccion').hide();
+                $('#idiomaDestino').prop('required', false);
+            }
+        });
+
         // Manejo del formulario
         $('#sintetizadorForm').on('submit', function(e) {
             e.preventDefault();
@@ -358,6 +440,25 @@
             
             // Enviar formulario
             const formData = new FormData(this);
+            
+            // Agregar el modo de voz al formulario
+            const modoVoz = $('input[name="modoVoz"]:checked').val();
+            formData.append('modoVoz', modoVoz);
+            
+            // Si es voz predefinida, agregar el voice_id
+            if (modoVoz === 'predefinida') {
+                const vozPredefinidaId = $('#vozPredefinida').val();
+                formData.append('vozPredefinidaId', vozPredefinidaId);
+            }
+            
+            // Si se solicita traducción, agregar el idioma destino
+            if ($('#traducirLetra').is(':checked')) {
+                const idiomaDestino = $('#idiomaDestino').val();
+                if (idiomaDestino) {
+                    formData.append('traducirA', idiomaDestino);
+                }
+            }
+            
             $.ajax({
                 url: $(this).attr('action'),
                 type: 'POST',
